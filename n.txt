@@ -51,3 +51,8 @@ func main() {
 	err := http.ListenAndServe(":4000", nil)
 	log.Fatal(err)
 }
+
+// http.HandlerFunc() is an adapter to allow the use of ordinary functions as
+// HTTP handlers. If f is a function with the appropriate signature,
+// HandlerFunc(f) is a Handler that calls f
+http.HandlerFunc()

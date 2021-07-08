@@ -33,7 +33,9 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 	// Initialize empty buffer
 	buf := new(bytes.Buffer)
 
-	// Write the template to the buffer, instead of straight to the http.ResponseWriter. If there's an error, call serverError() and return
+	// Write the template to the buffer, instead of straight to the http.ResponseWriter. If there's an error, call serverError() and return.
+	// If an error occurs executing the template or writing its output, execution stops, but partial results may already have been written to the output writer.
+	// Thus we test it first on buffer.
 	err := ts.Execute(buf, app.addDefaultData(td, r))
 	if err != nil {
 		app.serverError(w, err)
