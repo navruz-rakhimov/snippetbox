@@ -9,11 +9,6 @@ import (
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
-
 	s, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, err)
@@ -23,32 +18,10 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, "home.page.tmpl", &templateData{
 		Snippets: s,
 	})
-
-	/*
-	data := &templateData{Snippets: s}
-
-	files := []string{
-		"./ui/html/home.page.tmpl",
-		"./ui/html/base.layout.tmpl",
-		"./ui/html/footer.partial.tmpl",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = ts.Execute(w, data)
-	if err != nil {
-		app.serverError(w, err)
-	}
-	*/
-	// w.Write([]byte("Hello from SnippetBox"))
 }
 
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
@@ -66,35 +39,13 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, "show.page.tmpl", &templateData{
 		Snippet: s,
 	})
+}
 
-	/*
-	data := &templateData{Snippet: s}
-
-	files := []string{
-		"./ui/html/show.page.tmpl",
-		"./ui/html/base.layout.tmpl",
-		"./ui/html/footer.partial.tmpl",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	err = ts.Execute(w, data)
-	if err != nil {
-		app.serverError(w, err)
-	}
-	*/
+func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Create a new snippet"))
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost)
-		app.clientError(w, http.StatusMethodNotAllowed)
-		return
-	}
-
 	// creating dummy data
 	title := "0 snail"
 	content := "0 snail\nClimb Mount Fuji,\nBut slowly!\n\n-Kobayashi Issa"
@@ -106,5 +57,5 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/snippet?id=%d", id), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
 }
