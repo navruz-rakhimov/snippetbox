@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"flag"
 	_ "github.com/go-sql-driver/mysql"
@@ -48,6 +49,7 @@ func main() {
 	// Initialize a new session manager
 	session := sessions.New([]byte(*secret))
 	session.Lifetime = 12 * time.Hour
+	session.Secure = true  // setting the Secure flag on our session cookies
 
 	// initializing our application
 	app := &application{
@@ -58,15 +60,27 @@ func main() {
 		session: session,
 	}
 
+	// Initialize a tls.Config struct to hold the non-default TLS settings we
+	// want the server to use.
+	tlsConfig := &tls.Config{
+		PreferServerCipherSuites: true,
+		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+	}
+
 	// initializing our custom server
 	srv := &http.Server{
 		Addr: *addr,
 		ErrorLog: errorLog   ,
 		Handler: app.routes(),
+		TLSConfig: tlsConfig,
+		// Idle, Read and Write timeouts to the server for preventing slow-client attacks
+		IdleTimeout: time.Minute,
+		ReadTimeout: 5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
 	infoLog.Printf("Starting server on %s", *addr)
-	err = srv.ListenAndServe()
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	errorLog.Fatal(err)
 }
 
