@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/navruz-rakhimov/snippetbox/pkg/forms"
 	"github.com/navruz-rakhimov/snippetbox/pkg/models"
 	"html/template"
 	"path/filepath"
@@ -11,6 +12,7 @@ type templateData struct {
 	CurrentYear int
 	Snippet *models.Snippet
 	Snippets []*models.Snippet
+	Form *forms.Form
 }
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {

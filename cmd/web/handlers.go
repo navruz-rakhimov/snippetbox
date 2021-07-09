@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/navruz-rakhimov/snippetbox/pkg/forms"
 	"github.com/navruz-rakhimov/snippetbox/pkg/models"
 	"net/http"
 	"strconv"
@@ -42,21 +43,29 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "create.page.tmpl", nil)
+	app.render(w, r, "create.page.tmpl", &templateData{
+		Form: forms.New(nil),
+	})
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	// creating dummy data
 	err := r.ParseForm()
 	if err != nil {
-		app.serverError(w, err)
+		app.clientError(w, http.StatusBadRequest)
 	}
 
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
-	expires := r.PostForm.Get("expires")
+	form := forms.New(r.PostForm)
+	form.Required("title", "content", "expires")
+	form.MaxLength("title", 100)
+	form.PermittedValues("expires", "365", "7", "1")
 
-	id, err := app.snippets.Insert(title, content, expires)
+	if !form.Valid() {
+		app.render(w, r, "create.page.tmpl", &templateData{Form: form})
+		return
+	}
+
+	id, err := app.snippets.Insert(form.Get("title"), form.Get("content"), form.Get("expires"))
 	if err != nil {
 		app.serverError(w, err)
 		return
