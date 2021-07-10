@@ -16,7 +16,7 @@ func (app *application) routes() http.Handler {
 	// a new middleware chain containing the middleware specific to our
 	// dynamic application routes.
 	// Enable is middleware which loads and saves session data to and from the session cookie
-	dynamicMiddleware := alice.New(app.session.Enable)
+	dynamicMiddleware := alice.New(app.session.Enable, noSurf)
 
 	// using 3rd-party router for restful routing
 	mux := pat.New()
